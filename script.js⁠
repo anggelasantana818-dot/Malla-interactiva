@@ -1,0 +1,53 @@
+const ramos = [
+    { id: "quim101", nombre: "Química General", semestre: 1, prereq: [] },
+    { id: "mate101", nombre: "Cálculo I", semestre: 1, prereq: [] },
+    { id: "quim102", nombre: "Química Orgánica", semestre: 2, prereq: ["quim101"] }
+];
+
+let aprobados = JSON.parse(localStorage.getItem("ramosAprobados")) || {};
+
+function renderMalla() {
+    const container = document.getElementById("malla-container");
+    container.innerHTML = "";
+
+    for (let s = 1; s <= 2; s++) {
+        let col = document.createElement("div");
+        col.className = "semestre-column";
+        col.innerHTML = `<h3>Semestre ${s}</h3>`;
+
+        let ramosSemestre = ramos.filter(r => r.semestre === s);
+
+        ramosSemestre.forEach(ramo => {
+            let div = document.createElement("div");
+            div.className = "ramo";
+            div.innerText = ramo.nombre;
+
+            let cumplePrereq = ramo.prereq.every(p => aprobados[p]);
+
+            if (aprobados[ramo.id]) {
+                div.classList.add("aprobado");
+            } else if (!cumplePrereq) {
+                div.classList.add("bloqueado");
+            } else {
+                div.classList.add("disponible");
+            }
+
+            div.onclick = () => {
+                if (!cumplePrereq && !aprobados[ramo.id]) {
+                    alert("¡Faltan prerrequisitos para este ramo!");
+                    return;
+                }
+                
+                aprobados[ramo.id] = !aprobados[ramo.id];
+                localStorage.setItem("ramosAprobados", JSON.stringify(aprobados));
+                renderMalla();
+            };
+
+            col.appendChild(div);
+        });
+
+        container.appendChild(col);
+    }
+}
+
+renderMalla();
